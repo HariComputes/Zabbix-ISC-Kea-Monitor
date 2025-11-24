@@ -1,0 +1,201 @@
+zabbix_export:
+  version: '7.4'
+  template_groups:
+    - uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    - uuid: 4f1e3306477349e5b2c3353c3d16f70f
+      template: 'ISC Kea Suite Monitoring'
+      name: 'ISC Kea Suite Monitoring'
+      groups:
+        - name: Templates
+      items:
+        - uuid: 8d9f787d344d4bc1b8a175d598253dce
+          name: 'HA Mode'
+          type: DEPENDENT
+          key: kea.ha-mode
+          value_type: TEXT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$[0][''arguments''][''high-availability''][0][''ha-mode'']'
+          master_item:
+            key: kea.status
+        - uuid: 15caec572557470d8596bb3269c18e5e
+          name: 'HA Role'
+          type: DEPENDENT
+          key: kea.local.role
+          value_type: TEXT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$[0][''arguments''][''high-availability''][0][''ha-servers''][''local''][''role'']'
+          master_item:
+            key: kea.status
+        - uuid: 57d9b149a6314e8087c03759ec60073e
+          name: 'Kea Configured Local Server name'
+          type: DEPENDENT
+          key: kea.local.servername
+          value_type: TEXT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$[0].arguments["high-availability"][0]["ha-servers"].local["server-name"]'
+          master_item:
+            key: kea.status
+        - uuid: 3653ea9033d841ce930064d189bc3f48
+          name: 'Socket Status'
+          type: DEPENDENT
+          key: kea.local.socket
+          value_type: TEXT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$[0][''arguments''][''sockets''][''status'']'
+          master_item:
+            key: kea.status
+          triggers:
+            - uuid: 1be2e2eac9124279899d34c0f16324ea
+              expression: 'last(/ISC Kea Suite Monitoring/kea.local.socket)="failed"'
+              name: 'Socket Failure Detected'
+              priority: HIGH
+        - uuid: 5da5841eb87948e780eed5a4cc07de41
+          name: 'Socket Errors'
+          type: DEPENDENT
+          key: kea.local.socket-errors
+          value_type: TEXT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$[0][''arguments''][''sockets''][''errors'']'
+          master_item:
+            key: kea.status
+        - uuid: 627e09f221104d4c9d56686da452d252
+          name: 'HA State'
+          type: DEPENDENT
+          key: kea.local.state
+          value_type: TEXT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$[0][''arguments''][''high-availability''][0][''ha-servers''][''local''][''state'']'
+          master_item:
+            key: kea.status
+          triggers:
+            - uuid: d4c1420303734997bc1a041796633cd5
+              expression: 'last(/ISC Kea Suite Monitoring/kea.local.state)="ready"'
+              name: 'HA local member in ready state'
+              priority: INFO
+            - uuid: 73b2d3f6270e4d8bb42e70dd5ed92da0
+              expression: 'last(/ISC Kea Suite Monitoring/kea.local.state)="unavailable"'
+              name: 'HA local member in unavailable state'
+              priority: WARNING
+            - uuid: dfb72d2cab0845a688ed85a96c0b7643
+              expression: 'last(/ISC Kea Suite Monitoring/kea.local.state)="waiting"'
+              name: 'HA local member in waiting state'
+              priority: INFO
+            - uuid: 637cb74c22614a2b8b781854c63a31c6
+              expression: 'last(/ISC Kea Suite Monitoring/kea.local.state)="partner-down"'
+              name: 'HA Partner Down'
+              priority: HIGH
+            - uuid: 3ba71471b8fc48d39b0e4b50a9f24631
+              expression: 'last(/ISC Kea Suite Monitoring/kea.local.state)="ready"'
+              name: 'HA Partner in ready State'
+              priority: INFO
+        - uuid: 8e5cbf04dddf4927be9dc257516efe1e
+          name: 'HA Partner Last State'
+          type: DEPENDENT
+          key: kea.remote.last-state
+          value_type: TEXT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$[0][''arguments''][''high-availability''][0][''ha-servers''][''remote''][''last-state'']'
+          master_item:
+            key: kea.status
+          triggers:
+            - uuid: 512415737ddb4e7bb65fb95e2ad6da56
+              expression: 'last(/ISC Kea Suite Monitoring/kea.remote.last-state)="unavailable"'
+              name: 'HA remote member last state was unavailable'
+              priority: WARNING
+        - uuid: 9140ec3c45814496825afc3027c3cfe9
+          name: 'HA Partner Role'
+          type: DEPENDENT
+          key: kea.remote.role
+          value_type: TEXT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$[0][''arguments''][''high-availability''][0][''ha-servers''][''remote''][''role'']'
+          master_item:
+            key: kea.status
+        - uuid: 5bebda0e147044d0a99d59172c3baf55
+          name: 'Kea Configured Remote Server name'
+          type: DEPENDENT
+          key: kea.remote.servername
+          value_type: TEXT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$[0][''arguments''][''high-availability''][0][''ha-servers''][''remote''][''server-name'']'
+          master_item:
+            key: kea.status
+        - uuid: 3a59df70c31d4c9ba989c84a5ddeb103
+          name: 'Unacked Clients'
+          type: DEPENDENT
+          key: kea.remote.unacked
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$[0][''arguments''][''high-availability''][0][''ha-servers''][''remote''][''unacked-clients'']'
+          master_item:
+            key: kea.status
+          triggers:
+            - uuid: 451db9d787e047dcafcd35706d0d6ce4
+              expression: 'last(/ISC Kea Suite Monitoring/kea.remote.unacked)>0'
+              name: 'Unacked DHCP Request Detected'
+              priority: WARNING
+        - uuid: b9ab666b796c4f88b83a1413134789e4
+          name: 'Unacked Clients Left'
+          type: DEPENDENT
+          key: kea.remote.unacked-left
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$[0][''arguments''][''high-availability''][0][''ha-servers''][''remote''][''unacked-clients-left'']'
+          master_item:
+            key: kea.status
+        - uuid: f7fd4cb232984c31b9104f1de82ca9b1
+          name: 'Kea status'
+          type: HTTP_AGENT
+          key: kea.status
+          value_type: TEXT
+          url: '{HOST.CONN}:{$KEACTRLPORT}'
+          posts: |
+            {
+                "command": "status-get"
+            }
+          headers:
+            - name: Content-Type
+              value: application/json
+          request_method: POST
+      httptests:
+        - uuid: b0d0e9ba99b84bde8fc6b8787884f8d4
+          name: 'API Monitor'
+          attempts: '3'
+          steps:
+            - name: 'API Monitor'
+              url: '{HOST.CONN}:{$KEACTRLPORT}'
+              posts: "{\r\n    \"command\": \"status-get\"\r\n}"
+              headers:
+                - name: Content-Type
+                  value: application/json
+              status_codes: '200'
+      macros:
+        - macro: '{$KEACTRLPORT}'
+          value: '8005'
+  triggers:
+    - uuid: 47c3ee5d866a4786aeb009dce0f01723
+      expression: 'last(/ISC Kea Suite Monitoring/web.test.fail[API Monitor])>0'
+      name: 'API Failure Detected'
+      priority: AVERAGE
